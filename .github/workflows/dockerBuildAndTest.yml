@@ -1,0 +1,89 @@
+name: Docker Build and Test
+
+on:
+  pull_request:
+    branches: [ main ]
+  push:
+    branches: [ main ]
+  workflow_dispatch:
+
+
+jobs:
+  build-validate:
+    name: ubuntu-ci
+    strategy:
+      fail-fast: true
+      matrix:
+        os: [ubuntu-22.04]
+        targetarch: [x86_64, AArch64]
+        torch-binary: [ON, OFF]
+        llvmtype: [source, binary]
+        llvmbuildtype: [in-tree, out-of-tree]
+        exclude:
+          # No need for "out-of-tree LLVM and PyTorch source"
+          - llvmtype: source
+            llvmbuildtype: in-tree
+          - llvmtype: binary
+            llvmbuildtype: out-of-tree
+          # Disable M1 builds until https://github.com/llvm/torch-mlir/issues/1094 is fixed
+          - targetarch: AArch64
+    runs-on: ${{ matrix.os }}
+
+    steps:
+      - name: Checkout torch-mlir
+        uses: actions/checkout@v2
+        with:
+          submodules: 'true'
+
+      - run: sudo apt update  # For ccache with Docker jobs
+      - name: Setup ccache action
+        uses: hendrikmuhs/ccache-action@v1.2
+        with:
+          key: ${{ matrix.os }}-${{ matrix.targetarch }}-${{ matrix.llvmtype }}-${{ matrix.llvmbuildtype }}
+          max-size: 2G
+
+      - name: Build docker image
+        run: |
+          docker build -f build_tools/docker/Dockerfile \
+                       -t torch-mlir-cmake:ci \
+                       .
+
+      - name: Build torch-mlir in-tree using llvm binary
+        # Should be the fastest builds for CI and fails fast
+        # OSX CMake flags are ignore on Linux
+        if: matrix.llvmtype == 'binary'
+        run: |
+          docker run --rm \
+                     -v "$(pwd)":/opt/src/torch-mlir \
+                     -e CCACHE_DIR=/opt/src/torch-mlir/.ccache \
+                     -e TORCH_BINARY=${{ matrix.torch-binary }} \
+                     -e TARGET_ARCH=${{ matrix.targetarch }} \
+                     torch-mlir-cmake:ci \
+                     ./build_tools/docker/run_cmake_build.sh
+
+      - name: Build torch-mlir out-of-tree using llvm source
+        # This build takes a while but is expected to almost always be cached.
+        # A cache invalidation occurs when the committed LLVM version is changed.
+        if: matrix.llvmtype == 'source'
+        run: |
+          docker run --rm \
+                     -v "$(pwd)":/opt/src/torch-mlir \
+                     -e CCACHE_DIR=/opt/src/torch-mlir/.ccache \
+                     -e TORCH_BINARY=${{ matrix.torch-binary }} \
+                     -e TARGET_ARCH=${{ matrix.targetarch }} \
+                     torch-mlir-cmake:ci \
+                     ./build_tools/docker/run_cmake_build_oot.sh
+
+      - name: Run unit tests
+        if: matrix.llvmtype == 'binary'
+        run: |
+          docker run --rm \
+                     -v "$(pwd)":/opt/src/torch-mlir \
+                     torch-mlir-cmake:ci ./build_tools/docker/run_unit_test.sh
+
+      - name: Run integration tests
+        if: matrix.llvmtype == 'binary'
+        run: |
+          docker run --rm \
+                     -v "$(pwd)":/opt/src/torch-mlir \
+                     torch-mlir-cmake:ci ./build_tools/docker/run_integration_test.sh
