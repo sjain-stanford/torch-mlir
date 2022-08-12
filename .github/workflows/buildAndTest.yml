@@ -55,7 +55,7 @@ jobs:
         docker run --rm \
                    -v "$(pwd)":/opt/src/torch-mlir \
                    -e CCACHE_DIR=/opt/src/torch-mlir/.ccache \
-                   -e TORCH_BINARY=${{ matrix.torch-binary }} \
+                   -e TORCH_BINARY="${{ matrix.torch-binary }}" \
                    torch-mlir-cmake:ci \
                    ./build_tools/docker/run_cmake_build.sh
 
@@ -66,7 +66,7 @@ jobs:
         docker run --rm \
                    -v "$(pwd)":/opt/src/torch-mlir \
                    -e CCACHE_DIR=/opt/src/torch-mlir/.ccache \
-                   -e TORCH_BINARY=${{ matrix.torch-binary }} \
+                   -e TORCH_BINARY="${{ matrix.torch-binary }}" \
                    torch-mlir-cmake:ci \
                    ./build_tools/docker/run_cmake_build_oot.sh
 
