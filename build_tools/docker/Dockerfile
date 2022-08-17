@@ -2,8 +2,7 @@ ARG BASE_IMG=ubuntu:18.04
 FROM ${BASE_IMG} as dev-base
 
 ARG ARCH="x86_64"
-ARG TARGETARCH="amd64"
-ARG BAZEL_VERSION=4.2.1
+ARG BAZEL_VERSION=5.2.0
 
 # Install basic packages
 RUN apt-get update                                              && \
@@ -33,9 +32,9 @@ RUN update-alternatives --install /usr/bin/clang++ clang++ /usr/bin/clang++-10 1
 RUN wget -q https://github.com/bazelbuild/bazel/releases/download/${BAZEL_VERSION}/bazel-${BAZEL_VERSION}-linux-${ARCH} -O /usr/bin/bazel \
     && chmod a+x /usr/bin/bazel
 
-COPY requirements.txt /opt/app/torch-mlir-requirements.txt
+COPY requirements.txt /opt/app/requirements.txt
 WORKDIR /opt/app
 RUN python -m pip install --upgrade pip
-RUN python -m pip install --ignore-installed -r torch-mlir-requirements.txt
+RUN python -m pip install --ignore-installed -r requirements.txt
 
 WORKDIR /opt/src/torch-mlir
