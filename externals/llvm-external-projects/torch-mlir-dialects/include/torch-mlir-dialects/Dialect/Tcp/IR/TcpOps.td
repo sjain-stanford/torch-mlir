@@ -32,6 +32,24 @@ def Tcp_TanhOp : Tcp_UnaryElementwiseOp<"tanh"> {
   let assemblyFormat = "$in attr-dict `:` type($in) `->` type($out)";
 }
 
+def Tcp_SigmoidOp : Tcp_UnaryElementwiseOp<"sigmoid"> {
+  let summary = "Computes sigmoid of input, elementwise";
+
+  let description = [{
+    Computes elementwise sigmoid of the input tensor.
+  }];
+
+  let arguments = (ins
+    Tcp_FloatOrComplexTensor:$in
+  );
+
+  let results = (outs
+    Tcp_FloatOrComplexTensor:$out
+  );
+
+  let assemblyFormat = "$in attr-dict `:` type($in) `->` type($out)";
+}
+
 def Tcp_AddOp : Tcp_BinaryElementwiseOp<"add", [SameOperandsAndResultElementType]> {
   let summary = "Computes elementwise addition";
 
