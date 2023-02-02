@@ -422,6 +422,7 @@ TCP_PASS_SET = {
     "ElementwiseAddModule_basic",
     "ElementwiseToDtypeIdentityModule_basic",
     "ElementwiseUnaryModule_basic",
+    "ElementwiseSigmoidModule_basic",
     "ExpandModule_basic",
     "ReturnThreeTensorFloat32_basic",
     "ReturnTwoTensorF32I64_basic",
