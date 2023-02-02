@@ -62,6 +62,15 @@ createLinalgPayloadForElementwiseOp(Operation *op,
   if (isa<TanhOp>(op))
     return {b.create<math::TanhOp>(loc, payloadArgs[0])};
 
+  if (isa<SigmoidOp>(op)) {
+    auto elemType = resultTensorType.getElementType();
+    auto one = b.create<arith::ConstantOp>(loc, FloatAttr::get(elemType, 1));
+    auto negate = b.create<arith::NegFOp>(loc, payloadArgs[0]);
+    auto exp = b.create<math::ExpOp>(loc, negate);
+    auto sum = b.create<arith::AddFOp>(loc, exp, one);
+    return {b.create<arith::DivFOp>(loc, one, sum)};
+  }
+
   if (isa<AddOp>(op)) {
     auto elemType = resultTensorType.getElementType();
     if (elemType.isa<mlir::FloatType>())
@@ -116,4 +125,5 @@ void mlir::TcpToLinalg::populateElementwisePatternsAndLegality(
   target.addIllegalDialect<TcpDialect>();
   patterns.add<ConvertElementwiseOp<TanhOp>>(typeConverter, context);
   patterns.add<ConvertElementwiseOp<AddOp>>(typeConverter, context);
+  patterns.add<ConvertElementwiseOp<SigmoidOp>>(typeConverter, context);
 }
