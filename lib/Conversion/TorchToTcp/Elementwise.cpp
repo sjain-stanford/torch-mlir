@@ -107,6 +107,28 @@ public:
   }
 };
 
+class ConvertAtenSigmoidOp : public OpConversionPattern<AtenSigmoidOp> {
+public:
+  using OpConversionPattern<AtenSigmoidOp>::OpConversionPattern;
+  using OpAdaptor = typename AtenSigmoidOp::Adaptor;
+
+  LogicalResult
+  matchAndRewrite(AtenSigmoidOp op, OpAdaptor adaptor,
+                  ConversionPatternRewriter &rewriter) const override {
+    Value input = adaptor.getSelf();
+    RankedTensorType inputType = input.getType().dyn_cast<RankedTensorType>();
+    if (!inputType)
+      return rewriter.notifyMatchFailure(
+          op, "Only Ranked Tensor types are supported in TCP");
+    if (!inputType.getElementType().isa<mlir::FloatType>())
+      return rewriter.notifyMatchFailure(
+          op, "Sigmoid input tensor must have floating-point datatype");
+
+    rewriter.replaceOpWithNewOp<tcp::SigmoidOp>(op, inputType, input);
+    return success();
+  }
+};
+
 } // namespace
 
 void torch_to_tcp::populateElementwisePatternsAndLegality(
@@ -116,6 +138,9 @@ void torch_to_tcp::populateElementwisePatternsAndLegality(
 
   target.addIllegalOp<AtenTanhOp>();
   patterns.add<ConvertAtenTanhOp>(typeConverter, context);
+
+  target.addIllegalOp<AtenSigmoidOp>();
+  patterns.add<ConvertAtenSigmoidOp>(typeConverter, context);
 
   target.addIllegalOp<AtenAddTensorOp>();
   patterns.add<ConvertAtenAddOp>(typeConverter, context);
