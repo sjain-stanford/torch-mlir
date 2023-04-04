@@ -11,6 +11,7 @@
 #define TORCH_MLIR_DIALECT_TCP_OPS
 
 include "torch-mlir-dialects/Dialect/Tcp/IR/TcpBase.td"
+include "torch-mlir-dialects/Dialect/Tcp/IR/TcpOpsAttrs.td"
 
 include "mlir/IR/OpBase.td"
 
@@ -465,6 +466,27 @@ def Tcp_NegOp : Tcp_UnaryElementwiseOp<"neg"> {
   );
 
   let assemblyFormat = "$in attr-dict `:` type($in) `->` type($out)";
+}
+
+def Tcp_ConvolutionOp : Tcp_Op<"convolution"> {
+  let summary = "Convolution operation";
+
+  let description = [{
+    Computes cross-correlation between windows of `input` and `kernel` to produce `result`.
+  }];
+
+  let arguments = !con(
+    (ins
+        Tcp_Tensor:$input,
+        Tcp_Tensor:$kernel,
+        Optional<Tcp_IntTensor>:$padding),
+    Tcp_ConvolutionAttributes.attributes);
+
+  let results = (outs Tcp_Tensor:$out);
+
+  let assemblyFormat = [{}];
+  //let assemblyFormat = "attr-dict-with-keyword `:` type($input) `->` type($out)";
+
 }
 
 #endif // TORCH_MLIR_DIALECT_TCP_OPS
