@@ -17,6 +17,8 @@
 #include "mlir/IR/OpDefinition.h"
 #include "mlir/Interfaces/SideEffectInterfaces.h"
 
+#define GET_ATTRDEF_CLASSES
+#include "torch-mlir-dialects/Dialect/Tcp/IR/TcpOpsAttrs.h.inc"
 #define GET_OP_CLASSES
 #include "torch-mlir-dialects/Dialect/Tcp/IR/TcpOps.h.inc"
 
