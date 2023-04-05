@@ -484,8 +484,14 @@ def Tcp_ConvolutionOp : Tcp_Op<"convolution"> {
 
   let results = (outs Tcp_Tensor:$out);
 
-  let assemblyFormat = [{}];
-  //let assemblyFormat = "attr-dict-with-keyword `:` type($input) `->` type($out)";
+  let assemblyFormat = [{
+     `(`operands`)`
+        `dim_numbers` `=` $dimension_numbers `,`
+        `window_strides` `=` $window_strides `,`
+        `input_dilation` `=` $input_dilation `,`
+        `feature_groups` `=` $feature_groups
+        attr-dict `:` functional-type(operands, results)
+  }];
 
 }
 
