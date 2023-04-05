@@ -473,23 +473,23 @@ def Tcp_ConvolutionOp : Tcp_Op<"convolution"> {
 
   let description = [{
     Computes cross-correlation between windows of `input` and `kernel` to produce `result`.
+
+    The `input` is assumed to be pre-padded by a `tcp.pad` op, which takes explicit padding
+    amounts for each of the spatial dimension, which are either constants or derived from a
+    `tcp.compute_pad_for_conv` op.
   }];
 
   let arguments = !con(
     (ins
         Tcp_Tensor:$input,
-        Tcp_Tensor:$kernel,
-        Optional<Tcp_IntTensor>:$padding),
+        Tcp_Tensor:$kernel),
     Tcp_ConvolutionAttributes.attributes);
 
   let results = (outs Tcp_Tensor:$out);
 
   let assemblyFormat = [{
      `(`operands`)`
-        `dim_numbers` `=` $dimension_numbers `,`
-        `window_strides` `=` $window_strides `,`
-        `input_dilation` `=` $input_dilation `,`
-        `feature_groups` `=` $feature_groups
+        `dim_numbers` `=` $dimension_numbers
         attr-dict `:` functional-type(operands, results)
   }];
 

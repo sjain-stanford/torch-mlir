@@ -36,7 +36,6 @@ def Tcp_Tensor : RankedTensorOf<[Tcp_Scalar]>;
 def Tcp_TensorOrScalar : AnyTypeOf<[Tcp_Tensor, Tcp_Scalar]>;
 
 def Tcp_FloatTensor : RankedTensorOf<[AnyFloat]>;
-def Tcp_IntTensor : RankedTensorOf<[AnySignlessInteger]>;
 def Tcp_FloatOrIntTensor : RankedTensorOf<[AnyFloat, AnySignlessInteger]>;
 def Tcp_FloatOrComplexTensor : RankedTensorOf<[AnyFloat, AnyComplex]>;
 
