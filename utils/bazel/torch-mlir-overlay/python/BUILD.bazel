@@ -1,0 +1,86 @@
+load("@llvm-project//mlir:tblgen.bzl", "gentbl_cc_library", "gentbl_filegroup", "td_library")
+load("@rules_python//python:defs.bzl", "py_library")
+load("@pybind11_bazel//:build_defs.bzl", "pybind_extension")
+load("//projects/pt1/python:symlink_files.bzl", "symlink_files")
+
+package(
+    default_visibility = [
+        "//visibility:public",
+    ],
+)
+
+exports_files(["torch_mlir/dialects/torch/__init__.py"])
+
+symlink_files(
+    name = "dialect_core_py_files",
+    srcs = ["@llvm-project//mlir/python:DialectCorePyFiles"],
+    dst = "torch_mlir/dialects/",
+)
+
+symlink_files(
+    name = "dialect_func_py_files",
+    srcs = ["@llvm-project//mlir/python:FuncPyFiles"],
+    dst = "torch_mlir/dialects/",
+)
+
+td_library(
+    name = "TorchOpsPyTdFiles",
+    srcs = [
+        "torch_mlir/dialects/TorchBinding.td",
+    ],
+    includes = ["include"],
+    deps = [
+        "@llvm-project//mlir:OpBaseTdFiles",
+        "//:MLIRTorchOpsIncGenTdFiles",
+    ]
+)
+
+gentbl_filegroup(
+    name = "TorchOpsPyGen",
+    tbl_outs = [
+        (
+            [
+                "-gen-python-op-bindings",
+                "-bind-dialect=torch",
+            ],
+            "torch_mlir/dialects/_torch_ops_gen.py",
+        ),
+    ],
+    tblgen = "@llvm-project//mlir:mlir-tblgen",
+    td_file = "torch_mlir/dialects/TorchBinding.td",
+    deps = [
+        ":TorchOpsPyTdFiles",
+    ],
+)
+
+filegroup(
+    name = "TorchOpsPyFiles",
+    srcs = [
+        ":TorchOpsPyGen",
+    ],
+)
+
+pybind_extension(
+    name = "torch_mlir/_mlir_libs/_torchMlir",
+    srcs = [
+        "TorchMLIRModule.cpp",
+        "//:include/torch-mlir-c/Dialects.h",
+    ],
+    deps = [
+        "//projects/pt1/python:TorchMLIRCAPI_shared_lib",
+        "//:TorchMLIRCAPIHdrs",
+        "@llvm-project//mlir:MLIRBindingsPythonHeaders",
+    ],
+    visibility = ["//visibility:public"],
+)
+
+py_library(
+    name = "torch_dialect",
+    srcs = ["torch_mlir/dialects/torch/__init__.py"],
+    data = [
+        ":TorchOpsPyFiles",
+        ":dialect_core_py_files",
+        ":dialect_func_py_files",
+        ":torch_mlir/_mlir_libs/_torchMlir.so",
+    ],
+)

@@ -4,6 +4,7 @@
 
 load("@bazel_skylib//rules:expand_template.bzl", "expand_template")
 load("@llvm-project//llvm:lit_test.bzl", "lit_test", "package_path")
+load("@rules_python//python:defs.bzl", "py_test")
 
 package(
     default_visibility = [
@@ -38,5 +39,15 @@ filegroup(
         "@llvm-project//llvm:FileCheck",
         "@llvm-project//llvm:count",
         "@llvm-project//llvm:not",
+    ],
+)
+
+py_test(
+    name = "test_convnet",
+    srcs = ["test_convnet.py"],
+    deps = [
+        #"@pytorch//:pytorch_py",
+        "@torch-mlir//projects/pt1/python:torch_mlir_e2e_test_lib_py",
+        "@torch-mlir//projects/pt1/python:torch_mlir_py",
     ],
 )
