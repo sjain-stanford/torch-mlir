@@ -1,7 +1,8 @@
-load("@llvm-project//mlir:tblgen.bzl", "gentbl_cc_library", "gentbl_filegroup", "td_library")
+load("@rules_cc//cc:defs.bzl", "cc_library")
+load("@llvm-project//mlir:tblgen.bzl", "gentbl_filegroup", "td_library")
 load("@rules_python//python:defs.bzl", "py_library")
 load("@pybind11_bazel//:build_defs.bzl", "pybind_extension")
-load("//projects/pt1/python:symlink_files.bzl", "symlink_files")
+load(":symlink_files.bzl", "symlink_files")
 
 package(
     default_visibility = [
@@ -9,7 +10,35 @@ package(
     ],
 )
 
-exports_files(["torch_mlir/dialects/torch/__init__.py"])
+symlink_files(
+    name = "ir_py_files",
+    srcs = ["@llvm-project//mlir/python:IRPyFiles"],
+    dst = "torch_mlir/",
+)
+
+symlink_files(
+    name = "mlir_lib_py_files",
+    srcs = ["@llvm-project//mlir/python:MlirLibsPyFiles"],
+    dst = "torch_mlir/_mlir_libs",
+)
+
+symlink_files(
+    name = "pass_manager_py_files",
+    srcs = ["@llvm-project//mlir/python:PassManagerPyFiles"],
+    dst = "torch_mlir/",
+)
+
+symlink_files(
+    name = "execution_engine_py_files",
+    srcs = ["@llvm-project//mlir/python:ExecutionEnginePyFiles"],
+    dst = "torch_mlir/",
+)
+
+symlink_files(
+    name = "runtime_py_files",
+    srcs = ["@llvm-project//mlir/python:RuntimePyFiles"],
+    dst = "torch_mlir/runtime/",
+)
 
 symlink_files(
     name = "dialect_core_py_files",
@@ -61,13 +90,54 @@ filegroup(
 )
 
 pybind_extension(
+    name = "torch_mlir/_mlir_libs/_mlir",
+    srcs = [
+        "@llvm-project//mlir:lib/Bindings/Python/MainModule.cpp",
+    ],
+    deps = [
+        ":TorchMLIRCAPI_shared_lib",
+        "@llvm-project//mlir:MLIRBindingsPythonHeaders",
+    ],
+    visibility = ["//visibility:public"],
+)
+
+pybind_extension(
+    name = "torch_mlir/_mlir_libs/_mlirExecutionEngine",
+    srcs = [
+        "@llvm-project//mlir:lib/Bindings/Python/ExecutionEngineModule.cpp",
+    ],
+    deps = [
+        ":TorchMLIRCAPI_shared_lib",
+        "@llvm-project//mlir:MLIRBindingsPythonHeaders",
+    ],
+    visibility = ["//visibility:public"],
+)
+
+pybind_extension(
+    name = "torch_mlir/_mlir_libs/_mlirRegisterEverything",
+    srcs = [
+        "@llvm-project//mlir:include/mlir-c/Bindings/Python/Interop.h",
+        "@llvm-project//mlir:include/mlir/Bindings/Python/PybindAdaptors.h",
+        "@llvm-project//mlir:lib/Bindings/Python/RegisterEverything.cpp",
+    ],
+    deps = [
+        ":TorchMLIRCAPI_shared_lib",
+        "@llvm-project//mlir:MLIRBindingsPythonHeaders",
+        "@llvm-project//mlir:CAPIConversionHeaders",
+        "@llvm-project//mlir:CAPIRegisterEverythingHeaders",
+        "@llvm-project//mlir:CAPITransformsHeaders",
+    ],
+    visibility = ["//visibility:public"],
+)
+
+pybind_extension(
     name = "torch_mlir/_mlir_libs/_torchMlir",
     srcs = [
         "TorchMLIRModule.cpp",
         "//:include/torch-mlir-c/Dialects.h",
     ],
     deps = [
-        "//projects/pt1/python:TorchMLIRCAPI_shared_lib",
+        ":TorchMLIRCAPI_shared_lib",
         "//:TorchMLIRCAPIHdrs",
         "@llvm-project//mlir:MLIRBindingsPythonHeaders",
     ],
@@ -83,4 +153,48 @@ py_library(
         ":dialect_func_py_files",
         ":torch_mlir/_mlir_libs/_torchMlir.so",
     ],
+)
+
+py_library(
+    name = "torch_mlir_py",
+    srcs = glob([
+        "torch_mlir/*.py",
+        "torch_mlir/extras/*.py",
+        "torch_mlir/_mlir_libs/*.py",
+        "torch_mlir/_mlir_libs/_mlir/*.py",
+    ]),
+    deps = [
+        ":torch_dialect",
+    ],
+    data = [
+        ":TorchOpsPyFiles",
+        ":ir_py_files",
+        ":mlir_lib_py_files",
+        ":dialect_core_py_files",
+        ":dialect_func_py_files",
+        ":pass_manager_py_files",
+        ":execution_engine_py_files",
+        ":runtime_py_files",
+        ":torch_mlir/_mlir_libs/_mlir.so",
+        ":torch_mlir/_mlir_libs/_torchMlir.so",
+        ":torch_mlir/_mlir_libs/_mlirExecutionEngine.so",
+        ":torch_mlir/_mlir_libs/_mlirRegisterEverything.so",
+    ],
+)
+
+
+cc_binary(
+    name = "torch_mlir/_mlir_libs/TorchMLIRCAPI.so",
+    linkopts = [
+        "-Wl,-soname=TorchMLIRCAPI.so",
+        "-Wl,-rpath='$$ORIGIN'",
+    ],
+    deps = ["//:TorchMLIRCAPIObjs"],
+    linkshared = True,
+)
+
+cc_library(
+    name = "TorchMLIRCAPI_shared_lib",
+    srcs = [":torch_mlir/_mlir_libs/TorchMLIRCAPI.so"],
+    alwayslink = True,
 )

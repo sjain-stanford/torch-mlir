@@ -43,11 +43,10 @@ filegroup(
 )
 
 py_test(
-    name = "test_convnet",
-    srcs = ["python/test_convnet.py"],
+    name = "basic_test",
+    srcs = ["python/fx_importer/basic_test.py"],
     deps = [
+        "@torch-mlir//python:torch_mlir_py",
         #"@pytorch//:pytorch_py",
-        "@torch-mlir//projects/pt1/python:torch_mlir_e2e_test_lib_py",
-        "@torch-mlir//projects/pt1/python:torch_mlir_py",
     ],
 )
