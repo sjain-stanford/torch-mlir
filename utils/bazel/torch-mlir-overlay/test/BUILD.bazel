@@ -44,7 +44,7 @@ filegroup(
 
 py_test(
     name = "test_convnet",
-    srcs = ["test_convnet.py"],
+    srcs = ["python/test_convnet.py"],
     deps = [
         #"@pytorch//:pytorch_py",
         "@torch-mlir//projects/pt1/python:torch_mlir_e2e_test_lib_py",
