@@ -164,8 +164,8 @@ gentbl_cc_library(
         ),
         (
             ["-gen-pass-capi-impl"],
-            "include/torch-mlir/Dialect/Torch/Transforms/Transforms.capi.cpp.inc"
-        )
+            "include/torch-mlir/Dialect/Torch/Transforms/Transforms.capi.cpp.inc",
+        ),
     ],
     tblgen = "@llvm-project//mlir:mlir-tblgen",
     td_file = "include/torch-mlir/Dialect/Torch/Transforms/Passes.td",
