@@ -957,3 +957,14 @@ py_binary(
         "@pytorch//:pytorch_py",
     ],
 )
+
+load("@rules_python//python:pip.bzl", "compile_pip_requirements")
+
+exports_files(["pytorch-requirements.txt, requirements_lock.txt"])
+
+# bazel run //:requirements.update
+compile_pip_requirements(
+    name = "requirements",
+    requirements_in = ":pytorch-requirements.txt",
+    requirements_txt = ":requirements_lock.txt",
+)
