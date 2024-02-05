@@ -97,6 +97,7 @@ pybind_extension(
     deps = [
         ":TorchMLIRCAPI_shared_lib",
         "@llvm-project//mlir:MLIRBindingsPythonHeaders",
+        "@llvm-project//mlir:MLIRBindingsPythonCore",
     ],
     visibility = ["//visibility:public"],
 )
