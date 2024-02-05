@@ -948,16 +948,6 @@ cc_library(
     alwayslink = True,
 )
 
-py_binary(
-    name = "e2e_testing/torchscript/main",
-    srcs = ["e2e_testing/torchscript/main.py"],
-    deps = [
-        "//python:torch_mlir_py",
-        "//python:torch_mlir_e2e_test_lib_py",
-        "@pytorch//:pytorch_py",
-    ],
-)
-
 load("@rules_python//python:pip.bzl", "compile_pip_requirements")
 
 exports_files(["pytorch-requirements.txt, requirements_lock.txt"])

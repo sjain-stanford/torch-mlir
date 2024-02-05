@@ -2,13 +2,6 @@
 # See https://llvm.org/LICENSE.txt for license information.
 # SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
-build --cxxopt=-std=c++17
-build --host_cxxopt=-std=c++17
-build --cxxopt=-D_GLIBCXX_USE_CXX11_ABI=0
-build --cxxopt=-U__GXX_ABI_VERSION
-build --cxxopt=-D__GXX_ABI_VERSION=1011
-build --cxxopt=-DPYBIND11_COMPILER_TYPE=\"_gcc\"
-build --cxxopt=-DMLIR_PYTHON_PACKAGE_PREFIX=torch_mlir.
 
 # Licensed under the Apache License v2.0 with LLVM Exceptions.
 # See https://llvm.org/LICENSE.txt for license information.
@@ -34,7 +27,7 @@ build:generic_clang --copt=-Wall --host_copt=-Wall
 
 # The Clang available on MacOS has a warning that isn't clean on MLIR code. The
 # warning doesn't show up with more recent Clangs, so just disable for now.
-build:generic_clang --cxxopt=-Wno-range-loop-analysis --host_cxxopt=-Wno-range-loop-analysis
+build:generic_clang --cxxopt=-Wno-range-loop-analysis --host_cxxopt=-Wno-range-loop-analysis --cxxopt=-D_GLIBCXX_USE_CXX11_ABI=0  --cxxopt=-U__GXX_ABI_VERSION --cxxopt=-D__GXX_ABI_VERSION=1011 --cxxopt=-DPYBIND11_COMPILER_TYPE=\"_gcc\" --cxxopt=-DMLIR_PYTHON_PACKAGE_PREFIX=torch_mlir.
 
 # Build errors are not a helpful way to enforce deprecation in-repo and it is
 # not the point of the Bazel build to catch usage of deprecated APIs.

@@ -155,16 +155,19 @@ py_library(
     ],
 )
 
+load("@pip_deps//:requirements.bzl", "requirement")
+
 py_library(
     name = "torch_mlir_py",
     srcs = glob([
-        "torch_mlir/*.py",
+        "torch_mlir/**/*.py",
         "torch_mlir/extras/*.py",
         "torch_mlir/_mlir_libs/*.py",
         "torch_mlir/_mlir_libs/_mlir/*.py",
     ]),
     deps = [
         ":torch_dialect",
+        requirement("numpy"),
     ],
     data = [
         ":TorchOpsPyFiles",
@@ -180,6 +183,7 @@ py_library(
         ":torch_mlir/_mlir_libs/_mlirExecutionEngine.so",
         ":torch_mlir/_mlir_libs/_mlirRegisterEverything.so",
     ],
+    visibility = ["//visibility:public"],
 )
 
 

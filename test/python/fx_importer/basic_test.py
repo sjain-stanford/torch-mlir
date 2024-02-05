@@ -13,9 +13,9 @@ import torch
 import torch.export
 import torch.nn as nn
 
-from torch_mlir.extras.fx_importer import FxImporter
-from torch_mlir import ir
-from torch_mlir.dialects import torch as torch_d
+from python.torch_mlir.extras.fx_importer import FxImporter
+from python.torch_mlir import ir
+from python.torch_mlir.dialects import torch as torch_d
 
 
 def export_and_import(
