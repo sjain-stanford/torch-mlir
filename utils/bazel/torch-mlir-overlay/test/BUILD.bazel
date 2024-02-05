@@ -44,23 +44,11 @@ filegroup(
 
 load("@pip_deps//:requirements.bzl", "requirement")
 
-py_binary(
+py_test(
     name = "basic_test",
     srcs = ["python/fx_importer/basic_test.py"],
     deps = [
         requirement("torch"),
-        "@torch-mlir//python:torch_mlir_py",
-    ],
-)
-
-
-py_binary(
-    name = "test_convnet",
-    srcs = ["python/test_convnet.py"],
-    deps = [
-        requirement("torch"),
-        requirement("numpy"),
-        #requirement("torch_mlir"),
         "@torch-mlir//python:torch_mlir_py",
     ],
 )
