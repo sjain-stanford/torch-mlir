@@ -730,6 +730,7 @@ class FxImporter:
         sig = prog.graph_signature
         state_dict = prog.state_dict
         arg_replacements: Dict[str, Any] = {}
+        print(prog)
 
         # If there is no "constants" attribute, consult the "state_dict". Otherwise, only look
         # at "constants". Relevant upstream patch: https://github.com/pytorch/pytorch/pull/118969
@@ -1467,8 +1468,13 @@ class GraphNodeImporter:
                     )
                 )
 
+        tensor_meta = node.meta.get("tensor_meta")
+        if tensor_meta is not None:
+            assert isinstance(tensor_meta, TensorMetadata)
+        result_shape_expr = str(tensor_meta.shape)
+
         operation = _emit_operation(
-            mlir_op_name, result_types=result_types, operands=operands, loc=loc
+            mlir_op_name, result_types=result_types, operands=operands, loc=loc, result_shape_expr=result_shape_expr,
         )
 
         # Record value mapping.
@@ -1789,7 +1795,7 @@ def _get_mlir_op_name_for_schema(schema: FunctionSchema) -> str:
 
 
 def _emit_operation(
-    mlir_op_name: str, result_types: List[IrType], operands: List[Value], loc: Location
+    mlir_op_name: str, result_types: List[IrType], operands: List[Value], loc: Location, result_shape_expr: Optional[str] = None,
 ) -> Operation:
     # Support unregistered torch ops using torch.operator.
     # torch.operator is used to represent ops from registry
@@ -1798,7 +1804,10 @@ def _emit_operation(
     if not context.is_registered_operation(mlir_op_name):
         operation = Operation.create(
             "torch.operator",
-            attributes={"name": StringAttr.get(mlir_op_name)},
+            attributes={
+                "name": StringAttr.get(mlir_op_name),
+                "result_shape_expr": StringAttr.get(result_shape_expr),
+            },
             results=result_types,
             operands=operands,
             loc=loc,
@@ -1809,6 +1818,9 @@ def _emit_operation(
             results=result_types,
             operands=operands,
             loc=loc,
+            attributes={
+                "result_shape_expr": StringAttr.get(result_shape_expr),
+            },
         )
     return operation
 
